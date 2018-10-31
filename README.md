@@ -1,2 +1,2 @@
 # kaggle_hpa
-Various nb and models for the HPA kaggle competition
+Various nb and models for the HPA kaggle competition usin fastai
