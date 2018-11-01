@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-def f1(y_pred:Tensor, y_true:Tensor, thresh:float=0.5, beta:float=1, eps:float=1e-9, sigmoid:bool=True) -> Rank0Tensor:
+def f1(y_pred, y_true, thresh:float=0.5, beta:float=1, eps:float=1e-9, sigmoid:bool=True):
     beta2 = beta**2
     if sigmoid: y_pred = y_pred.sigmoid()
     y_pred = (y_pred>0.5).float()
