@@ -32,5 +32,5 @@ class Darknet(nn.Module):
 
     def forward(self, x): return self.layers(x)
 
-def dark_small([1,2,4,4,3], 28, 32)
-def dark_53([1,2,8,8,4], 28, 32)
+def dark_small(): return Darknet([1,2,4,4,3], 28, 32)
+def dark_53(): return Darknet([1,2,8,8,4], 28, 32)
