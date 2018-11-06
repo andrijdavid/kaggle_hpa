@@ -54,4 +54,5 @@ class WideResNet4(nn.Module):
 
 
 def wrn_22_4(): return WideResNet4(num_groups=3, N=3, num_classes=28, k=6, drop_p=0.)
+def wrn_22_10(): return WideResNet4(num_groups=3, N=3, num_classes=28, k=10, drop_p=0.3)
 def wrn_small_4(): return WideResNet4(num_groups=3, N=3, num_classes=28, k=6, drop_p=0., start_nf=4)
