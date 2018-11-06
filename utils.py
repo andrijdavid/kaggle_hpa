@@ -49,7 +49,7 @@ from torch.autograd import Variable
 
 class FocalLoss2d(nn.modules.loss._WeightedLoss):
 
-    def __init__(self, gamma=0, weight=None, size_average=None, ignore_index=-100,
+    def __init__(self, gamma=2, weight=None, size_average=None, ignore_index=-100,
                  reduce=None, reduction='mean', balance_param=0.25):
         super(FocalLoss2d, self).__init__(weight, size_average, reduce, reduction)
         self.gamma = gamma
@@ -64,9 +64,7 @@ class FocalLoss2d(nn.modules.loss._WeightedLoss):
         assert len(input.shape) == len(target.shape)
         assert input.size(0) == target.size(0)
         assert input.size(1) == target.size(1)
-        
         weight = Variable(self.weight)
-           
         # compute the negative likelyhood
         logpt = - F.binary_cross_entropy_with_logits(input, target, pos_weight=weight, reduction=self.reduction)
         pt = torch.exp(logpt)
