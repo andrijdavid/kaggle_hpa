@@ -7,7 +7,7 @@ import torch.nn.functional as F
 def f1(y_pred, y_true, thresh:float=0.5, beta:float=1, eps:float=1e-9, sigmoid:bool=True):
     beta2 = beta**2
     if sigmoid: y_pred = y_pred.sigmoid()
-    y_pred = (y_pred>0.5).float()
+    y_pred = (y_pred>thresh).float()
     y_true = y_true.float()
     TP = (y_pred*y_true).sum(dim=1)
     prec = TP/(y_pred.sum(dim=1)+eps)
