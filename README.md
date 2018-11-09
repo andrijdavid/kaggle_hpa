@@ -4,7 +4,7 @@ conda update conda -y
 conda install anaconda -y
 
 pip install --upgrade pip
-pip isntall --user kaggle
+pip install --user kaggle
 apt-get install nano
 apt-get install unzip
 
