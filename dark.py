@@ -48,7 +48,7 @@ class Darknet(nn.Module):
         super().__init__()
         layers = [conv_layer(4, nf, ks=3, stride=1)]
         for i,nb in enumerate(num_blocks):
-            layers += self.make_group_layer(nf, nb, stride=2-(i==1), se)
+            layers += self.make_group_layer(nf, nb, stride=2-(i==1), se=se)
             nf *= 2
         layers += [nn.AdaptiveAvgPool2d(1), Flatten(), nn.Linear(nf, num_classes)]
         self.layers = nn.Sequential(*layers)
