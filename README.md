@@ -4,7 +4,7 @@ conda update conda -y
 conda install anaconda -y
 
 pip install --upgrade pip
-pip isntall --user kaggle
+pip install --user kaggle
 apt-get install nano
 apt-get install unzip
 
@@ -32,4 +32,9 @@ mkdir test
 unzip -q train.zip -d train/
 unzip -q test.zip -d test/
 rm *.zip
+
+#Sync Fork
+git fetch upstream
+git checkout master
+git merge upstream/master
 ```
