@@ -2,6 +2,23 @@
 
 from fastai.layers import *
 from fastai.torch_core import *
+# from pap import PositionalAveragePooling, PSEModule
+
+# class GWApool(nn.Module):
+#     '''GWA
+#     https://arxiv.org/pdf/1809.08264.pdf'''
+#     def __init__(self):
+#         super().__init__(ni, classes)
+#         self.classes=classes
+#         l = nn.Linear(ni,
+        
+        
+#     def forward(self, x):
+#         n_features = np.prod(x.size()[1:])
+#         x = x.view(-1, n_features)
+#         M = torch.exp(l(x).sigmoid())
+#         (x * M / M.sum()).sum(dim=[1,2])
+        
 
 class ResLayer(nn.Module):
     "Resnet style `ResLayer`"
@@ -13,6 +30,55 @@ class ResLayer(nn.Module):
 
     def forward(self, x): return x + self.conv2(self.conv1(x))
 
+    
+
+from torch import nn
+
+
+class SELayer(nn.Module):
+    def __init__(self, channel, reduction=2):
+        super().__init__()
+        self.avg_pool = nn.AdaptiveAvgPool2d(1)
+        self.fc = nn.Sequential(
+                nn.Linear(channel, channel // reduction),
+                nn.ReLU(inplace=True),
+                nn.Linear(channel // reduction, channel),
+                nn.Sigmoid()
+        )
+
+    def forward(self, x):
+        b, c, _, _ = x.size()
+        y = self.avg_pool(x).view(b, c)
+        y = self.fc(y).view(b, c, 1, 1)
+        return x * y
+    
+class SEModule(nn.Module):
+    def __init__(self, ch, re=16):
+        super(SEModule, self).__init__()
+        self.se = nn.Sequential(nn.AdaptiveAvgPool2d(1),
+                                 nn.Conv2d(ch,ch//re,1),
+                                 nn.ReLU(inplace=True),
+                                 nn.Conv2d(ch//re,ch,1),
+                                 nn.Sigmoid()
+                               )
+    def forward(self, x):
+        return x * self.se(x)
+    
+class SCSEModule(nn.Module):
+    def __init__(self, ch, re=16):
+        super().__init__()
+        self.cSE = nn.Sequential(nn.AdaptiveAvgPool2d(1),
+                                 nn.Conv2d(ch,ch//re,1),
+                                 nn.ReLU(inplace=True),
+                                 nn.Conv2d(ch//re,ch,1),
+                                 nn.Sigmoid()
+                               )
+        self.sSE = nn.Sequential(nn.Conv2d(ch,ch,1),
+                                 nn.Sigmoid())
+        
+    def forward(self, x):
+        return x * self.cSE(x) + x * self.sSE(x)
+    
 class ResLayerSE(nn.Module):
     "Resnet style `ResLayer`"
     def __init__(self, ni:int):
@@ -20,18 +86,12 @@ class ResLayerSE(nn.Module):
         super().__init__()
         self.conv1=conv_layer(ni, ni//2, ks=1)
         self.conv2=conv_layer(ni//2, ni, ks=3)
+        
         #SE block
-        self.cSE = nn.Sequential(nn.AdaptiveAvgPool2d(1),
-                     nn.Conv2d(ni, ni//2,1),
-                     nn.ReLU(inplace=True),
-                     nn.Conv2d(ni//2, ni,1),
-                     nn.Sigmoid())
-        self.sSE = nn.Sequential(nn.Conv2d(ni,ni,1),
-                     nn.Sigmoid())
+        self.SE = SEModule(ni, 2)
         
     def forward(self, x): 
-        r = self.conv2(self.conv1(x))
-        return x + torch.addcmul(r * self.cSE(r), 1, r, self.sSE(r))
+        return x + self.SE(self.conv2(self.conv1(x)))
  
     
 class Darknet(nn.Module):

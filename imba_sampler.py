@@ -1,7 +1,7 @@
 import torch
 import torch.utils.data
 import torchvision
-
+import numpy as np
 
 class ImbalancedDatasetSampler(torch.utils.data.sampler.Sampler):
     """Samples elements randomly from a given list of indices for imbalanced dataset
@@ -30,7 +30,9 @@ class ImbalancedDatasetSampler(torch.utils.data.sampler.Sampler):
                 if l in label_to_count:
                     label_to_count[l] += 1
                 else: label_to_count[l]=1
-                
+        
+        
+        
         # weight for each sample
         weights = [1.0 / min([label_to_count[l] for l in self._get_label(dataset, idx)])
                    for idx in self.indices]
