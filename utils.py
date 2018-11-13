@@ -9,17 +9,17 @@ def f1(y_pred, y_true, thresh:float=0.5, beta:float=1, eps:float=1e-9, sigmoid:b
     if sigmoid: y_pred = y_pred.sigmoid()
     y_pred = (y_pred>thresh).float()
     y_true = y_true.float()
-    TP = (y_pred*y_true).sum(dim=1)
-    prec = TP/(y_pred.sum(dim=1)+eps)
-    rec = TP/(y_true.sum(dim=1)+eps)
+    TP = (y_pred*y_true).sum(dim=0)
+    prec = TP/(y_pred.sum(dim=0)+eps)
+    rec = TP/(y_true.sum(dim=0)+eps)
     res = (prec*rec)/(prec*beta2+rec+eps)*(1+beta2)
     return res.mean()
 
 def f1_np(y_pred, y_true, threshold=0.5):
     y_pred = (y_pred>threshold).astype(int)
-    TP = (y_pred*y_true).sum(1)
-    prec = TP/(y_pred.sum(1)+1e-7)
-    rec = TP/(y_true.sum(1)+1e-7)
+    TP = (y_pred*y_true).sum(0)
+    prec = TP/(y_pred.sum(0)+1e-7)
+    rec = TP/(y_true.sum(0)+1e-7)
     res = 2*prec*rec/(prec+rec+1e-7)
     return res.mean()
 
