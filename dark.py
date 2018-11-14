@@ -5,23 +5,23 @@ from fastai.torch_core import *
 from torch.autograd import Variable
 # from pap import PositionalAveragePooling, PSEModule
 
-class GWApool(nn.Module):
-    '''GWA
-    https://arxiv.org/pdf/1809.08264.pdf'''
-    def __init__(self, k, classes):
-        super().__init__()
-        self.classes = classes
-        self.k = k
-        self.w = Variable(torch.ones(k), requires_grad=True)
-        self.b = Variable(torch.ones(1), requires_grad=True)
-        self.l = nn.Linear(k, classes)
+# class GWApool(nn.Module):
+#     '''GWA
+#     https://arxiv.org/pdf/1809.08264.pdf'''
+#     def __init__(self, k, classes):
+#         super().__init__()
+#         self.classes = classes
+#         self.k = k
+#         self.w = Variable(torch.ones(k), requires_grad=True)
+#         self.b = Variable(torch.ones(1), requires_grad=True)
+#         self.l = nn.Linear(k, classes)
         
-    def forward(self, x):
-#         n_features = np.prod(x.size()[1:])
-#         x = x.view(-1, n_features)
-        x = x.float()
-        M = torch.exp(self.w.view(1, self.k, 1,1) * x + self.b).sigmoid()
-        return self.l((x * M / M.sum()).sum(dim=[-2,-1]))
+#     def forward(self, x):
+# #         n_features = np.prod(x.size()[1:])
+# #         x = x.view(-1, n_features)
+#         x = x.float()
+#         M = torch.exp(self.w.view(1, self.k, 1,1) * x + self.b).sigmoid()
+#         return self.l((x * M / M.sum()).sum(dim=[-2,-1]))
         
 
 class ResLayer(nn.Module):
@@ -71,12 +71,7 @@ class SEModule(nn.Module):
 class SCSEModule(nn.Module):
     def __init__(self, ch, re=16):
         super().__init__()
-        self.cSE = nn.Sequential(nn.AdaptiveAvgPool2d(1),
-                                 nn.Conv2d(ch,ch//re,1),
-                                 nn.ReLU(inplace=True),
-                                 nn.Conv2d(ch//re,ch,1),
-                                 nn.Sigmoid()
-                               )
+        self.cSE = SEModule(ch, re)
         self.sSE = nn.Sequential(nn.Conv2d(ch,ch,1),
                                  nn.Sigmoid())
         
@@ -114,7 +109,7 @@ class Darknet(nn.Module):
         for i,nb in enumerate(num_blocks):
             layers += self.make_group_layer(nf, nb, stride=2-(i==1), se=se)
             nf *= 2
-        layers += [GWApool(nf, num_classes)]
+        layers += [nn.AdaptiveAvgPool2d(1), Flatten(), nn.Linear(nf, num_classes)]
         self.layers = nn.Sequential(*layers)
 
     def forward(self, x): return self.layers(x)
