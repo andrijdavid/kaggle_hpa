@@ -1,8 +1,31 @@
 #helper functions
 import numpy as np
+import cv2
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+
+
+def open_image4d(path:PathOrStr)->Image:
+    '''open RGBA image from 4 different 1-channel files.
+    return: numpy array [4, sz, sz]'''
+    path=str(path)
+    flags = cv2.IMREAD_GRAYSCALE
+    red = cv2.imread(path+ '_red.png', flags)
+    blue = cv2.imread(path+ '_blue.png', flags)
+    green = cv2.imread(path+ '_green.png', flags)
+    yellow = cv2.imread(path+ '_yellow.png', flags)
+    im = np.stack(([red, green, blue, yellow]))
+
+    return Image(Tensor(im/255).float())
+
+# def open_image4d(path:PathOrStr)->Image:
+#     '''open RGBA image from a single 4-channel file
+#     return: numpy array [4, sz, sz]'''
+#     path=str(path)
+#     flags = cv2.IMREAD_UNCHANGED
+#     im = cv2.imread(path+ '.png', flags)
+#     return Image(Tensor(np.rollaxis(im, 2, 0)/255).float())
 
 def f1(y_pred, y_true, thresh:float=0.5, beta:float=1, eps:float=1e-9, sigmoid:bool=True):
     beta2 = beta**2
@@ -41,38 +64,38 @@ def find_thresh(y_pred, y_true):
 ##### This is focal loss class for multi class #####
 ####################################################
 
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-from torch.autograd import Variable
-# I refered https://github.com/c0nn3r/RetinaNet/blob/master/focal_loss.py
+# import torch
+# import torch.nn as nn
+# import torch.nn.functional as F
+# from torch.autograd import Variable
+# # I refered https://github.com/c0nn3r/RetinaNet/blob/master/focal_loss.py
 
-class FocalLoss2d(nn.modules.loss._WeightedLoss):
+# class FocalLoss2d(nn.modules.loss._WeightedLoss):
 
-    def __init__(self, gamma=2, weight=None, size_average=None, ignore_index=-100,
-                 reduce=None, reduction='mean', balance_param=0.25):
-        super(FocalLoss2d, self).__init__(weight, size_average, reduce, reduction)
-        self.gamma = gamma
-        self.weight = weight
-        self.size_average = size_average
-        self.ignore_index = ignore_index
-        self.balance_param = balance_param
+#     def __init__(self, gamma=2, weight=None, size_average=None, ignore_index=-100,
+#                  reduce=None, reduction='mean', balance_param=0.25):
+#         super(FocalLoss2d, self).__init__(weight, size_average, reduce, reduction)
+#         self.gamma = gamma
+#         self.weight = weight
+#         self.size_average = size_average
+#         self.ignore_index = ignore_index
+#         self.balance_param = balance_param
 
-    def forward(self, input, target):
+#     def forward(self, input, target):
         
-        # inputs and targets are assumed to be BatchxClasses
-        assert len(input.shape) == len(target.shape)
-        assert input.size(0) == target.size(0)
-        assert input.size(1) == target.size(1)
-        weight = Variable(self.weight)
-        # compute the negative likelyhood
-        logpt = - F.binary_cross_entropy_with_logits(input, target, pos_weight=weight, reduction=self.reduction)
-        pt = torch.exp(logpt)
+#         # inputs and targets are assumed to be BatchxClasses
+#         assert len(input.shape) == len(target.shape)
+#         assert input.size(0) == target.size(0)
+#         assert input.size(1) == target.size(1)
+#         weight = Variable(self.weight)
+#         # compute the negative likelyhood
+#         logpt = - F.binary_cross_entropy_with_logits(input, target, pos_weight=weight, reduction=self.reduction)
+#         pt = torch.exp(logpt)
 
-        # compute the loss
-        focal_loss = -( (1-pt)**self.gamma ) * logpt
-        balanced_focal_loss = self.balance_param * focal_loss
-        return balanced_focal_loss
+#         # compute the loss
+#         focal_loss = -( (1-pt)**self.gamma ) * logpt
+#         balanced_focal_loss = self.balance_param * focal_loss
+#         return balanced_focal_loss
 
 class FocalLoss(nn.Module):
     def __init__(self, gamma=2):
