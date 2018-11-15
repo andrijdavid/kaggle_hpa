@@ -76,7 +76,7 @@ class SCSEModule(nn.Module):
                                  nn.Sigmoid())
         
     def forward(self, x):
-        return x * self.cSE(x) + x * self.sSE(x)
+        return self.cSE(x) + x * self.sSE(x)
     
 class ResLayerSE(nn.Module):
     "Resnet style `ResLayer`"
