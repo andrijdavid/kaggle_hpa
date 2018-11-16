@@ -58,7 +58,7 @@ class SELayer(nn.Module):
     
 class SEModule(nn.Module):
     def __init__(self, ch, re=16):
-        super(SEModule, self).__init__()
+        super().__init__()
         self.se = nn.Sequential(nn.AdaptiveAvgPool2d(1),
                                  nn.Conv2d(ch,ch//re,1),
                                  nn.ReLU(inplace=True),
